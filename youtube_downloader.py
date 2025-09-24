@@ -18,8 +18,28 @@ import requests
 # Import configuration
 from config import (
     APP_NAME, APP_VERSION, DEFAULT_WINDOW_SIZE, DEFAULT_PLAYER_SIZE,
-    get_downloads_directory, sanitize_filename, REQUEST_TIMEOUT
+    get_downloads_directory, sanitize_filename, REQUEST_TIMEOUT,
+    get_proxy_config, get_custom_headers, USE_OAUTH, USE_PO_TOKEN, BYPASS_AGE_GATE
 )
+
+
+def create_enhanced_youtube_session():
+    """Create a requests session with enhanced headers and proxy for geo-restriction bypass"""
+    session = requests.Session()
+    
+    # Set custom headers for better geo-restriction bypass
+    custom_headers = get_custom_headers()
+    session.headers.update(custom_headers)
+    
+    # Set proxy if configured
+    proxy_config = get_proxy_config()
+    if proxy_config:
+        session.proxies.update(proxy_config)
+    
+    # Set timeout
+    session.timeout = REQUEST_TIMEOUT
+    
+    return session
 
 
 class YouTubeDownloaderFrame(wx.Frame):
@@ -133,8 +153,28 @@ class YouTubeDownloaderFrame(wx.Frame):
             # Update status
             wx.CallAfter(self.status_text.SetLabel, "Fetching video information...")
             
+            # Create enhanced session for better geo-restriction bypass
+            enhanced_session = create_enhanced_youtube_session()
+            
             # Create YouTube object
             yt = YouTube(url, on_progress_callback=self.progress_callback)
+            
+            # Try to apply our enhanced session to pytube's internal session
+            try:
+                if hasattr(yt, '_session'):
+                    # Update headers for geo-restriction bypass
+                    yt._session.headers.update(enhanced_session.headers)
+                    # Set proxy if configured
+                    if enhanced_session.proxies:
+                        yt._session.proxies.update(enhanced_session.proxies)
+                elif hasattr(yt, 'session'):
+                    # Alternative session attribute name
+                    yt.session.headers.update(enhanced_session.headers)
+                    if enhanced_session.proxies:
+                        yt.session.proxies.update(enhanced_session.proxies)
+            except Exception as session_error:
+                # If session modification fails, continue with default behavior
+                print(f"Warning: Could not modify session: {session_error}")
             
             # Get the highest quality progressive stream
             stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()

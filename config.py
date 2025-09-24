@@ -88,21 +88,19 @@ def sanitize_filename(filename):
 
 def configure_proxy():
     """Configure proxy settings from PROXY_URL"""
-    global PROXY_DICT
     if ENABLE_PROXY and PROXY_URL:
-        PROXY_DICT = {
+        proxy_dict = {
             'http': PROXY_URL,
             'https': PROXY_URL
         }
+        return proxy_dict
     else:
-        PROXY_DICT = None
-    return PROXY_DICT
+        return None
+
 
 def get_proxy_config():
     """Get the current proxy configuration"""
-    if not PROXY_DICT and ENABLE_PROXY:
-        configure_proxy()
-    return PROXY_DICT
+    return configure_proxy()
 
 def get_custom_headers():
     """Get custom headers for requests"""

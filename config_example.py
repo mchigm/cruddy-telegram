@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Configuration settings for YouTube Downloader
+Example configuration file showing proxy setup options
+Copy this file to config.py and modify the settings as needed
 """
 
 import os
@@ -29,10 +30,26 @@ REQUEST_TIMEOUT = 30  # seconds
 MAX_RETRIES = 3
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
-# Proxy settings for geo-restriction bypass
-ENABLE_PROXY = False  # Set to True to enable proxy support
-PROXY_URL = None  # Format: "http://username:password@proxy.server:port" or "http://proxy.server:port"
-PROXY_DICT = None  # Will be auto-generated from PROXY_URL if provided
+# PROXY CONFIGURATION EXAMPLES:
+
+# Example 1: No proxy (default)
+ENABLE_PROXY = False
+PROXY_URL = None
+
+# Example 2: Basic HTTP proxy
+# ENABLE_PROXY = True
+# PROXY_URL = "http://proxy.example.com:8080"
+
+# Example 3: Authenticated HTTP proxy
+# ENABLE_PROXY = True
+# PROXY_URL = "http://username:password@proxy.example.com:8080"
+
+# Example 4: SOCKS proxy (may require additional setup)
+# ENABLE_PROXY = True
+# PROXY_URL = "socks5://proxy.example.com:1080"
+
+# Auto-generated proxy configuration (don't modify)
+PROXY_DICT = None
 
 # Region bypass settings
 USE_OAUTH = False  # Disable OAuth to avoid region checks
@@ -87,16 +104,14 @@ def sanitize_filename(filename):
     return filename
 
 def configure_proxy():
-    """Configure proxy settings from PROXY_URL"""
+    """Return proxy settings from PROXY_URL"""
     if ENABLE_PROXY and PROXY_URL:
-        proxy_dict = {
+        return {
             'http': PROXY_URL,
             'https': PROXY_URL
         }
-        return proxy_dict
     else:
         return None
-
 
 def get_proxy_config():
     """Get the current proxy configuration"""

@@ -1,23 +1,46 @@
 #!/usr/bin/env python3
 """
 Demo script showing YouTube Downloader functionality without GUI
-This demonstrates the core downloading logic
+This demonstrates the core downloading logic with region bypass capabilities
 """
 
 import sys
 import time
 from pathlib import Path
 from pytube import YouTube
-from config import get_downloads_directory, sanitize_filename
+from config import get_downloads_directory, sanitize_filename, get_proxy_config, get_custom_headers
+import requests
+
+def create_enhanced_session():
+    """Create enhanced session for geo-restriction bypass"""
+    session = requests.Session()
+    session.headers.update(get_custom_headers())
+    proxy_config = get_proxy_config()
+    if proxy_config:
+        session.proxies.update(proxy_config)
+    return session
 
 def demo_download(url):
     """Demo function showing how video download works"""
     print(f"Demo: Processing URL: {url}")
     
     try:
+        # Create enhanced session for better geo-restriction bypass
+        enhanced_session = create_enhanced_session()
+        
         # Create YouTube object
         print("Creating YouTube object...")
         yt = YouTube(url)
+        
+        # Try to apply enhanced session for geo-restriction bypass
+        try:
+            if hasattr(yt, '_session'):
+                yt._session.headers.update(enhanced_session.headers)
+                if enhanced_session.proxies:
+                    yt._session.proxies.update(enhanced_session.proxies)
+                    print("✅ Applied proxy configuration for geo-restriction bypass")
+        except Exception as session_error:
+            print(f"Warning: Could not modify session: {session_error}")
         
         print(f"Video Title: {yt.title}")
         print(f"Duration: {yt.length} seconds")

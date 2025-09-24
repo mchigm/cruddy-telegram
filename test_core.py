@@ -9,6 +9,43 @@ import sys
 from pathlib import Path
 from pytube import YouTube
 import requests
+from config import get_proxy_config, get_custom_headers
+
+def test_geo_restriction_bypass():
+    """Test geo-restriction bypass functionality"""
+    print("Testing geo-restriction bypass functionality...")
+    
+    try:
+        # Test proxy configuration
+        proxy_config = get_proxy_config()
+        if proxy_config:
+            print(f"✅ Proxy configuration loaded: {list(proxy_config.keys())}")
+        else:
+            print("ℹ️  No proxy configuration (ENABLE_PROXY=False)")
+        
+        # Test custom headers
+        headers = get_custom_headers()
+        print(f"✅ Custom headers configured: {len(headers)} headers")
+        print(f"   User-Agent: {headers.get('User-Agent', 'Not set')[:50]}...")
+        
+        # Test if requests can be made with custom headers
+        test_session = requests.Session()
+        test_session.headers.update(headers)
+        if proxy_config:
+            test_session.proxies.update(proxy_config)
+        
+        # Make a simple request to test connectivity
+        response = test_session.get("https://httpbin.org/headers", timeout=10)
+        if response.status_code == 200:
+            print("✅ Enhanced session working correctly")
+            return True
+        else:
+            print(f"❌ Enhanced session test failed: {response.status_code}")
+            return False
+        
+    except Exception as e:
+        print(f"❌ Error testing geo-restriction bypass: {str(e)}")
+        return False
 
 def test_pytube_functionality():
     """Test if pytube can access YouTube videos"""
@@ -19,6 +56,19 @@ def test_pytube_functionality():
     
     try:
         yt = YouTube(test_url)
+        
+        # Try to apply geo-restriction bypass settings
+        try:
+            if hasattr(yt, '_session'):
+                custom_headers = get_custom_headers()
+                yt._session.headers.update(custom_headers)
+                proxy_config = get_proxy_config()
+                if proxy_config:
+                    yt._session.proxies.update(proxy_config)
+                    print("✅ Applied proxy configuration for testing")
+        except Exception as session_error:
+            print(f"Note: Could not modify session: {session_error}")
+        
         print(f"✅ Successfully accessed video: {yt.title}")
         print(f"   Duration: {yt.length} seconds")
         print(f"   Views: {yt.views}")
@@ -103,6 +153,7 @@ def main():
         test_downloads_directory,
         test_file_operations,
         test_requests_functionality,
+        test_geo_restriction_bypass,
         test_pytube_functionality,
     ]
     

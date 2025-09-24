@@ -53,6 +53,28 @@ This will create platform-specific executables in the `dist/` directory:
 - macOS: `.app` bundle and `.dmg` package
 - Linux: executable binary
 
+## Quick Proxy Setup
+
+If videos are blocked in your region, you can quickly enable proxy support:
+
+1. **Edit config.py** and change:
+```python
+ENABLE_PROXY = True
+PROXY_URL = "http://your-proxy-server:port"
+```
+
+2. **Test your configuration**:
+```bash
+python test_proxy.py
+```
+
+3. **Run the application**:
+```bash
+python youtube_downloader.py
+```
+
+For detailed proxy setup instructions, see [PROXY_SETUP.md](PROXY_SETUP.md).
+
 ## Usage
 
 1. **Launch the application**: Run `python youtube_downloader.py` or use the executable

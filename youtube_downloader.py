@@ -37,7 +37,7 @@ def create_enhanced_youtube_session():
         session.proxies.update(proxy_config)
     
     # Set timeout
-    session.timeout = REQUEST_TIMEOUT
+    # session.timeout = REQUEST_TIMEOUT  # Removed: timeout should be set per request
     
     return session
 

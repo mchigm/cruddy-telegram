@@ -15,16 +15,21 @@ import wx.media
 from pytube import YouTube
 import requests
 
+# Import configuration
+from config import (
+    APP_NAME, APP_VERSION, DEFAULT_WINDOW_SIZE, DEFAULT_PLAYER_SIZE,
+    get_downloads_directory, sanitize_filename, REQUEST_TIMEOUT
+)
+
 
 class YouTubeDownloaderFrame(wx.Frame):
     """Main application frame for YouTube downloader"""
     
     def __init__(self):
-        super().__init__(None, title="YouTube Downloader", size=(800, 600))
+        super().__init__(None, title=f"{APP_NAME} v{APP_VERSION}", size=DEFAULT_WINDOW_SIZE)
         
         # Create downloads directory
-        self.downloads_dir = Path("downloads")
-        self.downloads_dir.mkdir(exist_ok=True)
+        self.downloads_dir = get_downloads_directory()
         
         # Initialize UI
         self.init_ui()
@@ -143,7 +148,7 @@ class YouTubeDownloaderFrame(wx.Frame):
                 return
                 
             # Clean filename
-            safe_title = "".join(c for c in yt.title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_title = sanitize_filename(yt.title)
             filename = f"{safe_title}.mp4"
             filepath = self.downloads_dir / filename
             
@@ -253,7 +258,7 @@ class VideoPlayerDialog(wx.Dialog):
     """Simple video player dialog"""
     
     def __init__(self, parent, video_path):
-        super().__init__(parent, title="Video Player", size=(640, 480))
+        super().__init__(parent, title="Video Player", size=DEFAULT_PLAYER_SIZE)
         
         self.video_path = video_path
         self.init_ui()
